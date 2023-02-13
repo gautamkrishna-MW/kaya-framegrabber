@@ -30,11 +30,11 @@ void CameraRightCallback(STREAM_BUFFER_HANDLE streamBufferHandle, void* userCont
     
     frameInpRight = cv::Mat(1098, 1920, CV_16U, frMemPtr);
     imshow("Frame Inp Right", frameInpRight);
-    cv::waitKey(10);
-    /* char fileName[100] = {0};
+    cv::waitKey(1);
+    char fileName[100] = {0};
     sprintf(fileName,"./Frames/R%0.4d.png",frameRightCounter);
     cv::imwrite(fileName,frameInpRight);
-    frameRightCounter++; */
+    frameRightCounter++;
     
     // return stream buffer to input queue
     KYFG_BufferToQueue(streamBufferHandle, KY_ACQ_QUEUE_INPUT);
@@ -60,11 +60,11 @@ void CameraLeftCallback(STREAM_BUFFER_HANDLE streamBufferHandle, void* userConte
     
     frameInpLeft = cv::Mat(1098, 1920, CV_16U, frMemPtr);
     imshow("Frame Inp Left", frameInpLeft);
-    cv::waitKey(10);
-    /* char fileName[100] = {0};
+    cv::waitKey(1);
+    char fileName[100] = {0};
     sprintf(fileName,"./Frames/L%0.4d.png",frameLeftCounter);
     cv::imwrite(fileName,frameInpLeft);
-    frameLeftCounter++; */
+    frameLeftCounter++;
 
     // return stream buffer to input queue
     KYFG_BufferToQueue(streamBufferHandle, KY_ACQ_QUEUE_INPUT);
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
     KYFG_WritePortReg(physicalFGHandle,0,0x6028,0) ;//PortSensorControl0 := $0 ;
     KYFG_WritePortReg(physicalFGHandle,0,0x602c,0) ;//PortSensorControl1 := $0 ;
     KYFG_WritePortReg(physicalFGHandle,0,0x6018,0) ;//PortAcqMode := 0 ;
-    KYFG_WritePortReg(physicalFGHandle,0,0x6030,swap_uint32(0)) ; //1=Test Pattern
+    KYFG_WritePortReg(physicalFGHandle,0,0x6030,swap_uint32(0)); //1=Test Pattern
 
     /* Modifying the frame grabber parameters for dual-streaming */
     static const uint64_t cameraConnectionSpeedRegAddr = 0x4014;
@@ -177,6 +177,8 @@ int main(int argc, char* argv[])
             kayaErrchk(KYFG_BufferAllocAndAnnounce(camStreamHandle[camIter], frameDataSize, NULL, &streamBufferHandle[camIter][iFrame]));
         }
     }
+    
+    KYFG_WritePortReg(physicalFGHandle,0,0x6004,swap_uint32(1080)) ;//PortHeight := 1098 ;//Camera sends 1920x1098
 
     kayaErrchk(KYFG_StreamBufferCallbackRegister(camStreamHandle[0], CameraLeftCallback, NULL)); // pass stream handle as an argument returned in stream callback
     kayaErrchk(KYFG_StreamBufferCallbackRegister(camStreamHandle[1], CameraRightCallback, NULL)); // pass stream handle as an argument returned in stream callback
@@ -203,6 +205,7 @@ int main(int argc, char* argv[])
     signal(SIGINT, inthand);
     while(!stop)
     {
+
         // Put all buffers to input queue
                 
         // kayaErrchk(KYFG_CameraStop(camHandleArr[0]));
